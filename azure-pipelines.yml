@@ -14,16 +14,16 @@ steps:
     version: '8.x'
 
 - script: dotnet restore ./StringLibrary/StringLibrary.csproj
-  displayName: 'Restore packages'
+  displayName: 'Restore StringLibrary'
 
 - script: dotnet build ./StringLibrary/StringLibrary.csproj --configuration $(buildConfiguration)
-  displayName: 'Build project'
+  displayName: 'Build StringLibrary'
 
 - script: dotnet pack ./StringLibrary/StringLibrary.csproj --configuration $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)
-  displayName: 'Pack NuGet package'
+  displayName: 'Pack StringLibrary NuGet package'
 
 - script: |
     for %%F in ($(Build.ArtifactStagingDirectory)\*.nupkg) do (
       dotnet nuget push "%%F" --source "https://pkgs.dev.azure.com/cperalt4/_packaging/cperalt4/nuget/v3/index.json" --api-key AzureDevOps --skip-duplicate
     )
-  displayName: 'Push NuGet package to Azure Artifacts'
+  displayName: 'Push StringLibrary NuGet package to Azure Artifacts'
