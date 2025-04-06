@@ -1,6 +1,3 @@
-# Starter pipeline
-# https://aka.ms/yaml
-
 trigger:
   - main
 
@@ -11,25 +8,22 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
-  - task: UseDotNet@2
-    inputs:
-      packageType: 'sdk'
-      version: '8.x'
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    version: '8.x'
 
-  - script: dotnet restore
-    displayName: 'Restore packages'
+- script: dotnet restore ./StringLibrary/StringLibrary.csproj
+  displayName: 'Restore packages'
 
-  - script: dotnet build --configuration $(buildConfiguration)
-    displayName: 'Build project'
+- script: dotnet build ./StringLibrary/StringLibrary.csproj --configuration $(buildConfiguration)
+  displayName: 'Build project'
 
-  - script: dotnet pack --configuration $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)
-    displayName: 'Pack NuGet package'
+- script: dotnet pack ./StringLibrary/StringLibrary.csproj --configuration $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)
+  displayName: 'Pack NuGet package'
 
-  - script: dir $(Build.ArtifactStagingDirectory)
-    displayName: 'List contents of build artifact directory'
-
-  - script: |
-      for %%F in ($(Build.ArtifactStagingDirectory)\*.nupkg) do (
-        dotnet nuget push "%%F" --source "https://pkgs.dev.azure.com/cperalt4/_packaging/cperalt4/nuget/v3/index.json" --api-key AzureDevOps --skip-duplicate
-      )
-    displayName: 'Push NuGet package to Azure Artifacts'
+- script: |
+    for %%F in ($(Build.ArtifactStagingDirectory)\*.nupkg) do (
+      dotnet nuget push "%%F" --source "https://pkgs.dev.azure.com/cperalt4/_packaging/cperalt4/nuget/v3/index.json" --api-key AzureDevOps --skip-duplicate
+    )
+  displayName: 'Push NuGet package to Azure Artifacts'
