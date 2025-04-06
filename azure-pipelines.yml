@@ -22,7 +22,10 @@ steps:
   - script: dotnet pack --configuration $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)
     displayName: 'Pack NuGet package'
 
-  - script: dotnet nuget push "$(Build.ArtifactStagingDirectory)/*.nupkg" --source "https://pkgs.dev.azure.com/cperalt4/_packaging/cperalt4/nuget/v3/index.json" --api-key AzureDevOps --skip-duplicate
+  - script: dir $(Build.ArtifactStagingDirectory)
+    displayName: 'List contents of build artifact directory'
+
+  - script: dotnet nuget push "$(Build.ArtifactStagingDirectory)\*.nupkg" --source "https://pkgs.dev.azure.com/cperalt4/_packaging/cperalt4/nuget/v3/index.json" --api-key AzureDevOps --skip-duplicate
     displayName: 'Push NuGet package to Azure Artifacts'
     env:
       NUGET_CREDENTIALPROVIDER_SESSIONTOKENCACHE_ENABLED: true
