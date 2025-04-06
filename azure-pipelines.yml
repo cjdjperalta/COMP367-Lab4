@@ -27,9 +27,15 @@ steps:
   - script: dotnet pack --configuration $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)
     displayName: 'Pack NuGet package'
 
-  - task: NuGetCommand@2
-    inputs:
-      command: 'push'
-      packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-      publishVstsFeed: 'cperalt4'
-      allowPackageConflicts: true
+  # Push NuGet package manually using dotnet CLI
+  - script: |
+      dotnet nuget add source https://pkgs.dev.azure.com/cperalt4/_packaging/cperalt4/nuget/v3/index.json --name cperalt4 --username anything --password $(System.AccessToken) --store-password-in-clear-text
+    displayName: 'Add Azure Artifacts source'
+
+  - script: |
+      dotnet nuget push $(Build.ArtifactStagingDirectory)/*.nupkg --source cperalt4 --api-key AzureDevOps --skip-duplicate
+    displayName: 'Push NuGet package to Azure Artifacts'
+    nv:
+      NUGET_CREDENTIALPROVIDER_SESSIONTOKENCACHE_ENABLED: true
+      VSS_NUGET_EXTERNAL_FEED_ENDPOINTS: '{"endpointCredentials":[{"endpoint":"https://pkgs.dev.azure.com/cperalt4/_packaging/cperalt4/nuget/v3/index.json","username":"anything","password":"$(System.AccessToken)"}]}'
+
