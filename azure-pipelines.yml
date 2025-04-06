@@ -1,6 +1,4 @@
 # Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
 trigger:
@@ -27,21 +25,14 @@ steps:
   - script: dotnet pack --configuration $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)
     displayName: 'Pack NuGet package'
 
-  # ✅ Add source only if it doesn't exist already
+  # Push NuGet package directly to feed URL instead of relying on a named source
   - script: |
-      dotnet nuget list source | findstr cperalt4 > nul
-      if errorlevel 1 (
-        dotnet nuget add source https://pkgs.dev.azure.com/cperalt4/_packaging/cperalt4/nuget/v3/index.json --name cperalt4 --username anything --password $(System.AccessToken) --store-password-in-clear-text
-      ) else (
-        echo "Source 'cperalt4' already exists. Skipping add."
-      )
-    displayName: 'Add Azure Artifacts source'
-    env:
-      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
-  - script: |
-      dotnet nuget push $(Build.ArtifactStagingDirectory)/*.nupkg --source cperalt4 --api-key AzureDevOps --skip-duplicate
+      dotnet nuget push $(Build.ArtifactStagingDirectory)/*.nupkg \
+        --source "https://pkgs.dev.azure.com/cperalt4/_packaging/cperalt4/nuget/v3/index.json" \
+        --api-key AzureDevOps \
+        --skip-duplicate
     displayName: 'Push NuGet package to Azure Artifacts'
     env:
       NUGET_CREDENTIALPROVIDER_SESSIONTOKENCACHE_ENABLED: true
       VSS_NUGET_EXTERNAL_FEED_ENDPOINTS: '{"endpointCredentials":[{"endpoint":"https://pkgs.dev.azure.com/cperalt4/_packaging/cperalt4/nuget/v3/index.json","username":"anything","password":"$(System.AccessToken)"}]}'
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
