@@ -27,10 +27,17 @@ steps:
   - script: dotnet pack --configuration $(buildConfiguration) -o $(Build.ArtifactStagingDirectory)
     displayName: 'Pack NuGet package'
 
-  # Push NuGet package manually using dotnet CLI
+  # ✅ Add source only if it doesn't exist already
   - script: |
-      dotnet nuget add source https://pkgs.dev.azure.com/cperalt4/_packaging/cperalt4/nuget/v3/index.json --name cperalt4 --username anything --password $(System.AccessToken) --store-password-in-clear-text
+      dotnet nuget list source | findstr cperalt4 > nul
+      if errorlevel 1 (
+        dotnet nuget add source https://pkgs.dev.azure.com/cperalt4/_packaging/cperalt4/nuget/v3/index.json --name cperalt4 --username anything --password $(System.AccessToken) --store-password-in-clear-text
+      ) else (
+        echo "Source 'cperalt4' already exists. Skipping add."
+      )
     displayName: 'Add Azure Artifacts source'
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
   - script: |
       dotnet nuget push $(Build.ArtifactStagingDirectory)/*.nupkg --source cperalt4 --api-key AzureDevOps --skip-duplicate
@@ -38,4 +45,3 @@ steps:
     env:
       NUGET_CREDENTIALPROVIDER_SESSIONTOKENCACHE_ENABLED: true
       VSS_NUGET_EXTERNAL_FEED_ENDPOINTS: '{"endpointCredentials":[{"endpoint":"https://pkgs.dev.azure.com/cperalt4/_packaging/cperalt4/nuget/v3/index.json","username":"anything","password":"$(System.AccessToken)"}]}'
-
