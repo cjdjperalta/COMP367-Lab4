@@ -28,9 +28,6 @@ steps:
   - script: dir $(Build.ArtifactStagingDirectory)
     displayName: 'List contents of build artifact directory'
 
-  - script: |
-      dotnet nuget push "$(Build.ArtifactStagingDirectory)/*.nupkg" `
-        --source "https://pkgs.dev.azure.com/cperalt4/_packaging/cperalt4/nuget/v3/index.json" `
-        --api-key AzureDevOps `
-        --skip-duplicate
+  - script: >
+      dotnet nuget push "$(Build.ArtifactStagingDirectory)\*.nupkg" --source "https://pkgs.dev.azure.com/cperalt4/_packaging/cperalt4/nuget/v3/index.json" --api-key AzureDevOps --skip-duplicate
     displayName: 'Push NuGet package to Azure Artifacts'
